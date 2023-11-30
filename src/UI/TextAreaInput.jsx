@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-function TextAreaInput({ label, placeholder, type, value, onChange, rows }) {
+function TextAreaInput({ label, placeholder, type, value, onChange, rows, className }) {
     const [inputValue, setInputValue] = useState(value ?? "");
 
     useEffect(() => {
@@ -8,7 +8,7 @@ function TextAreaInput({ label, placeholder, type, value, onChange, rows }) {
     }, [value])
 
     return (
-        <div className="my-2 shrink-0">
+        <div className={`${className} my-2 shrink-0`}>
             {label && (
                 <label
                     className="block text-gray-400 text-sm font-bold mb-2"

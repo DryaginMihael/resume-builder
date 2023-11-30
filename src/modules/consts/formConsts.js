@@ -1,10 +1,5 @@
 export const PERSONAL_DETAILS = [
     {
-        label: "Job Title",
-        name: "jobTitle",
-        type: "text",
-    },
-    {
         label: "First Name",
         name: "firstName",
         type: "text",
@@ -13,6 +8,12 @@ export const PERSONAL_DETAILS = [
         label: "Last Name",
         name: "lastName",
         type: "text",
+    },
+    {
+        label: "Job Title",
+        name: "jobTitle",
+        type: "text",
+        placeholder: "e.g. Teacher"
     },
     {
         label: "Email",
@@ -40,3 +41,11 @@ export const PERSONAL_DETAILS = [
         type: "text",
     },
 ];
+
+export const DEFAULT_JOB = {
+    jobTitle: "",
+    employer: "",
+    startDate: "",
+    endDate: "",
+    description: "",
+}

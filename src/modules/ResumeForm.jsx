@@ -1,13 +1,18 @@
-import React, { useState } from "react";
-import generatePDF from "./helpers/generatePDF";
+import React, { useCallback, useEffect, useState } from "react";
+import { useDebounce } from 'use-debounce';
+import generatePDF from "../components/helpers/generatePDF";
 import TextInput from "../UI/TextInput";
-import { PERSONAL_DETAILS } from "./consts/formConsts";
+import { DEFAULT_JOB, PERSONAL_DETAILS } from "./consts/formConsts";
 import Heading from "../UI/Heading";
-import SkillsList from "./SkillsList";
+import SkillsList from "../components/SkillsList";
 import TextAreaInput from "../UI/TextAreaInput";
 import Button from "../UI/Button";
+import OrganizationForm from "../components/OrganizationForm";
+import debounce from "../helpers/debounce";
+import { GENERATE_TIMEOUT } from "../consts";
+import { EDU_FIELDS, JOB_FIELDS } from "../components/consts/organization";
 
-export function ResumeForm({ onDocChanged }) {
+export default function ResumeForm({ onDocChanged }) {
     // State to store user input
     const [personalDetails, setPersonalDetails] = useState({
         firstName: "",
@@ -19,49 +24,15 @@ export function ResumeForm({ onDocChanged }) {
     });
 
     const [professionalSummary, setProfessionalSummary] = useState("");
-    const [employmentHistory, setEmploymentHistory] = useState([]);
+    const [employmentHistory, setEmploymentHistory] = useState([
+        {
+            key: Date.now() + "",
+            ...DEFAULT_JOB,
+        },
+    ]);
     const [education, setEducation] = useState([]);
     const [newSkill, setNewSkill] = useState("");
     const [skills, setSkills] = useState([]);
-
-    // Handlers to update state
-    const handlePersonalDetailsChange = (data) => {
-        const { name, value } = data;
-        setPersonalDetails((prevDetails) => ({
-            ...prevDetails,
-            [name]: value,
-        }));
-    };
-
-    // ... handlers for professional summary, employment history, education, skills
-
-    // Function to add new employment and education fields
-    const addEmployment = () => {
-        setEmploymentHistory([
-            ...employmentHistory,
-            {
-                jobTitle: "",
-                employer: "",
-                startDate: "",
-                endDate: "",
-                description: "",
-            },
-        ]);
-    };
-
-    const addEducation = () => {
-        setEducation([
-            ...education,
-            { institution: "", degree: "", startDate: "", endDate: "" },
-        ]);
-    };
-
-    const addSkill = () => {
-        if (newSkill) {
-            setSkills([...skills, newSkill]);
-            setNewSkill("");
-        }
-    };
 
     const saveDoc = () => {
         const doc = generatePDF({
@@ -74,11 +45,73 @@ export function ResumeForm({ onDocChanged }) {
         onDocChanged(doc);
     };
 
+    const [debouncedSaveDoc] = useDebounce(saveDoc, GENERATE_TIMEOUT);
+
+    useEffect(() => {
+        // debouncedSaveDoc();
+    }, [
+        // personalDetails,
+        // professionalSummary,
+        // employmentHistory,
+        // education,
+        // skills,
+        debouncedSaveDoc
+    ]);
+
+    // Handlers to update state
+    const handlePersonalDetailsChange = (data) => {
+        const { name, value } = data;
+        setPersonalDetails((prevDetails) => ({
+            ...prevDetails,
+            [name]: value,
+        }));
+    };
+
+    // Function to add new employment and education fields
+    const addEmployment = () => {
+        setEmploymentHistory([
+            ...employmentHistory,
+            {
+                key: Date.now() + "",
+                DEFAULT_JOB,
+            },
+        ]);
+    };
+
+    const handleEmploymentChange = (job) => {
+        setEmploymentHistory(
+            employmentHistory.map((el) => {
+                return el.key === job.key ? job : el;
+            })
+        );
+    };
+
+    const addEducation = () => {
+        setEducation([
+            ...education,
+            { institution: "", degree: "", startDate: "", endDate: "" },
+        ]);
+    };
+
+    const handleEducationChange = (edu) => {
+        setEducation(
+            education.map((el) => {
+                return el.key === edu.key ? edu : el;
+            })
+        );
+    };
+
+    const addSkill = () => {
+        if (newSkill) {
+            setSkills([...skills, newSkill]);
+            setNewSkill("");
+        }
+    };
+
     return (
         <div className="ResumeForm w-1/2 overflow-auto h-full p-12 bg-white shadow-md">
             <Heading text={"Personal details"} />
             <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Personal Details Inputs */}
                 {PERSONAL_DETAILS.map((cfg) => (
                     <TextInput
                         key={cfg.name}
@@ -91,8 +124,6 @@ export function ResumeForm({ onDocChanged }) {
                         }
                     />
                 ))}
-
-                {/* ... other personal details inputs */}
             </div>
 
             <div className="mb-4">
@@ -102,7 +133,6 @@ export function ResumeForm({ onDocChanged }) {
                     reader! Mention your role, experience & most importantly -
                     your biggest achievements, best qualities and skills.
                 </span>
-                {/* Professional Summary */}
                 <TextAreaInput
                     placeholder={
                         "e.g. Passionate science teacher with 8+ years of experience and a track record of ..."
@@ -113,17 +143,13 @@ export function ResumeForm({ onDocChanged }) {
 
             <div className="mb-4">
                 <Heading text={"Employment History"} />
-                {/* Employment History */}
-                {/* Map through employmentHistory state to create inputs for each job */}
-                {employmentHistory.map((job, index) => (
-                    <div key={index}>
-                        <input
-                            type="text"
-                            placeholder="Job Title"
-                            className="p-2 border border-gray-300 rounded mb-2"
-                        />
-                        {/* ... other job inputs */}
-                    </div>
+                {employmentHistory.map((job) => (
+                    <OrganizationForm
+                        key={job.key}
+                        fields={JOB_FIELDS}
+                        entity={job}
+                        onChange={handleEmploymentChange}
+                    />
                 ))}
                 <button
                     onClick={addEmployment}
@@ -135,17 +161,13 @@ export function ResumeForm({ onDocChanged }) {
 
             <div className="mb-4">
                 <Heading text={"Education"} />
-                {/* Education */}
-                {/* Map through education state to create inputs for each education entry */}
-                {education.map((edu, index) => (
-                    <div key={index}>
-                        <input
-                            type="text"
-                            placeholder="Institution"
-                            className="p-2 border border-gray-300 rounded mb-2"
-                        />
-                        {/* ... other education inputs */}
-                    </div>
+                {education.map((edu) => (
+                    <OrganizationForm
+                        key={edu.key}
+                        fields={EDU_FIELDS}
+                        entity={edu}
+                        onChange={handleEducationChange}
+                    />
                 ))}
                 <button
                     onClick={addEducation}
@@ -157,11 +179,14 @@ export function ResumeForm({ onDocChanged }) {
 
             <div className="mb-4">
                 <Heading text={"Skills"} />
-                {/* Skills */}
                 <SkillsList skills={skills} />
                 <div className="md:w-1/2 flex items-center">
-                    <TextInput onChange={setNewSkill} value={newSkill} placeholder={'Type new skill'}/>
-                    <Button onClick={addSkill} text={'Add Skill'}/>
+                    <TextInput
+                        onChange={setNewSkill}
+                        value={newSkill}
+                        placeholder={"Type new skill"}
+                    />
+                    <Button onClick={addSkill} text={"Add Skill"} />
                 </div>
             </div>
 

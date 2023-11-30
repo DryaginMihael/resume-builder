@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { ResumeForm } from "../components/ResumeForm";
-import ResumePreview from "../components/ResumePreview";
+import ResumeForm from "../modules/ResumeForm";
+import ResumePreview from "../modules/ResumePreview";
 
 /**
  * @author
@@ -8,12 +8,14 @@ import ResumePreview from "../components/ResumePreview";
  **/
 
 export const BuilderPage = (props) => {
-    const [pdfDoc, setPdfDoc] = useState('');
+    const [pdfDoc, setPdfDoc] = useState("");
 
     const onDocChanged = (doc) => setPdfDoc(doc);
 
-    return <div className="BuilderPage flex h-full">
-        <ResumeForm onDocChanged={onDocChanged}/>
-        <ResumePreview doc={pdfDoc}/>
-    </div>;
+    return (
+        <div className="BuilderPage flex h-full">
+            <ResumeForm onDocChanged={onDocChanged} />
+            <ResumePreview doc={pdfDoc} />
+        </div>
+    );
 };

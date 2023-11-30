@@ -1,0 +1,1 @@
+export const GENERATE_TIMEOUT = 3000;
